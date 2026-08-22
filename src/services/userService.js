@@ -1,118 +1,36 @@
-import { mockUsers } from "../mock/mockUsers";
+import { apiRequest } from "./api";
 
-const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
+const asResult = async (promise) => {
+  try {
+    return await promise;
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+};
+
+const toQueryString = (params) => {
+  const query = Object.entries(params)
+    .filter(([, value]) => value !== undefined && value !== null && value !== "")
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&");
+  return query ? `?${query}` : "";
+};
 
 export const userService = {
-  // Get all users (for admin)
-  getAllUsers: async (filters = {}) => {
-    await delay();
-    let users = [...mockUsers];
+  getAllUsers: (filters = {}) =>
+    apiRequest(`/users${toQueryString({ status: filters.status, role: filters.role, search: filters.search })}`),
 
-    if (filters.status) {
-      users = users.filter(u => u.status === filters.status);
-    }
+  getUser: (userId) => apiRequest(`/users/${userId}`),
 
-    if (filters.role) {
-      users = users.filter(u => u.role === filters.role);
-    }
+  createUser: (userData) => asResult(apiRequest("/users", { method: "POST", body: userData })),
 
-    if (filters.search) {
-      const lowerSearch = filters.search.toLowerCase();
-      users = users.filter(u =>
-        u.name.toLowerCase().includes(lowerSearch) ||
-        u.email.toLowerCase().includes(lowerSearch) ||
-        u.mobile.includes(filters.search)
-      );
-    }
+  updateUser: (userId, userData) =>
+    asResult(apiRequest(`/users/${userId}`, { method: "PUT", body: userData })),
 
-    return users;
-  },
+  deleteUser: (userId) => asResult(apiRequest(`/users/${userId}`, { method: "DELETE" })),
 
-  // Get user by id
-  getUser: async (userId) => {
-    await delay();
-    return mockUsers.find(u => u.id === userId);
-  },
+  toggleUserStatus: (userId) =>
+    asResult(apiRequest(`/users/${userId}/toggle-status`, { method: "PATCH" })),
 
-  // Create user (admin)
-  createUser: async (userData) => {
-    await delay();
-    const newUser = {
-      id: mockUsers.length + 1,
-      ...userData,
-      createdDate: new Date().toISOString().split('T')[0],
-      avatar: `https://i.pravatar.cc/150?u=${userData.email}`,
-      addresses: []
-    };
-
-    mockUsers.push(newUser);
-
-    return {
-      success: true,
-      user: newUser
-    };
-  },
-
-  // Update user
-  updateUser: async (userId, userData) => {
-    await delay();
-    const user = mockUsers.find(u => u.id === userId);
-    if (user) {
-      Object.assign(user, userData);
-      return {
-        success: true,
-        user
-      };
-    }
-    return {
-      success: false,
-      message: "User not found"
-    };
-  },
-
-  // Delete user
-  deleteUser: async (userId) => {
-    await delay();
-    const index = mockUsers.findIndex(u => u.id === userId);
-    if (index > -1) {
-      mockUsers.splice(index, 1);
-      return {
-        success: true,
-        message: "User deleted successfully"
-      };
-    }
-    return {
-      success: false,
-      message: "User not found"
-    };
-  },
-
-  // Toggle user status
-  toggleUserStatus: async (userId) => {
-    await delay();
-    const user = mockUsers.find(u => u.id === userId);
-    if (user) {
-      user.status = user.status === "active" ? "inactive" : "active";
-      return {
-        success: true,
-        user
-      };
-    }
-    return {
-      success: false,
-      message: "User not found"
-    };
-  },
-
-  // Get user statistics
-  getUserStats: async () => {
-    await delay();
-    return {
-      totalUsers: mockUsers.length,
-      activeUsers: mockUsers.filter(u => u.status === "active").length,
-      inactiveUsers: mockUsers.filter(u => u.status === "inactive").length,
-      admins: mockUsers.filter(u => u.role === "admin").length,
-      regularUsers: mockUsers.filter(u => u.role === "user").length
-    };
-  }
+  getUserStats: () => apiRequest("/users/stats/summary")
 };

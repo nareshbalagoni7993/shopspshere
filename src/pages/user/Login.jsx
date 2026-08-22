@@ -27,7 +27,7 @@ const Login = () => {
 
       if (result.success) {
         dispatch(loginSuccess(result));
-        navigate(result.user.role === 'admin' ? '/admin' : '/dashboard');
+        navigate(result.user.role === 'admin' ? '/admin' : '/products');
       } else {
         setError(result.message);
         dispatch(loginFailure(result.message));

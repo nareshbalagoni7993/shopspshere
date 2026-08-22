@@ -16,7 +16,7 @@ const Header = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
     }
   };
 
@@ -47,8 +47,8 @@ const Header = () => {
 
         {/* Right menu */}
         <nav className="header-nav">
-          <Link to="/categories" className="nav-link">
-            Categories
+          <Link to="/products" className="nav-link">
+            Products
           </Link>
 
           {isAuthenticated ? (
@@ -106,8 +106,8 @@ const Header = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Link to="/categories" onClick={() => setMobileMenuOpen(false)}>
-            Categories
+          <Link to="/products" onClick={() => setMobileMenuOpen(false)}>
+            Products
           </Link>
           {isAuthenticated ? (
             <>

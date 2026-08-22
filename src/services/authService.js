@@ -1,133 +1,35 @@
-import { mockUsers, getCurrentUser, getUserByEmail } from "../mock/mockUsers";
+import { apiRequest } from "./api";
 
-const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
+const asResult = async (promise) => {
+  try {
+    return await promise;
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+};
 
 export const authService = {
-  // Login
-  login: async (email, password) => {
-    await delay();
-    const user = getUserByEmail(email);
-    
-    if (user && password === "password123") {
-      return {
-        success: true,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          avatar: user.avatar
-        },
-        token: "mock_jwt_token_" + user.id
-      };
-    }
-    
-    return {
-      success: false,
-      message: "Invalid email or password"
-    };
-  },
+  login: (email, password) =>
+    asResult(apiRequest("/auth/login", { method: "POST", body: { email, password } })),
 
-  // Register
-  register: async (userData) => {
-    await delay();
-    const newUser = {
-      id: mockUsers.length + 1,
-      ...userData,
-      role: "user",
-      status: "active",
-      createdDate: new Date().toISOString().split('T')[0],
-      avatar: `https://i.pravatar.cc/150?u=${userData.email}`,
-      addresses: []
-    };
-    
-    mockUsers.push(newUser);
-    
-    return {
-      success: true,
-      user: newUser,
-      token: "mock_jwt_token_" + newUser.id
-    };
-  },
+  register: (userData) =>
+    asResult(apiRequest("/auth/register", { method: "POST", body: userData })),
 
-  // Send OTP
-  sendOTP: async (email) => {
-    await delay();
-    return {
-      success: true,
-      message: "OTP sent to " + email,
-      otp: "123456" // Mock OTP
-    };
-  },
+  sendOTP: (email) => asResult(apiRequest("/auth/send-otp", { method: "POST", body: { email } })),
 
-  // Verify OTP
-  verifyOTP: async (email, otp) => {
-    await delay();
-    if (otp === "123456") {
-      return {
-        success: true,
-        message: "OTP verified successfully"
-      };
-    }
-    return {
-      success: false,
-      message: "Invalid OTP"
-    };
-  },
+  verifyOTP: (email, otp) =>
+    asResult(apiRequest("/auth/verify-otp", { method: "POST", body: { email, otp } })),
 
-  // Forgot password
-  forgotPassword: async (email) => {
-    await delay();
-    const user = getUserByEmail(email);
-    if (user) {
-      return {
-        success: true,
-        message: "Reset link sent to " + email
-      };
-    }
-    return {
-      success: false,
-      message: "User not found"
-    };
-  },
+  forgotPassword: (email) =>
+    asResult(apiRequest("/auth/forgot-password", { method: "POST", body: { email } })),
 
-  // Reset password
-  resetPassword: async (token, newPassword) => {
-    await delay();
-    return {
-      success: true,
-      message: "Password reset successfully"
-    };
-  },
+  resetPassword: (email, newPassword) =>
+    asResult(apiRequest("/auth/reset-password", { method: "POST", body: { email, newPassword } })),
 
-  // Logout
-  logout: async () => {
-    await delay();
-    return {
-      success: true
-    };
-  },
+  logout: () => asResult(apiRequest("/auth/logout", { method: "POST" })),
 
-  // Get current user
-  getCurrentUser: async () => {
-    await delay();
-    return getCurrentUser();
-  },
+  getCurrentUser: () => apiRequest("/auth/me"),
 
-  // Update profile
-  updateProfile: async (userId, profileData) => {
-    await delay();
-    const user = mockUsers.find(u => u.id === userId);
-    if (user) {
-      Object.assign(user, profileData);
-      return {
-        success: true,
-        user
-      };
-    }
-    return {
-      success: false,
-      message: "User not found"
-    };
-  }
+  updateProfile: (_userId, profileData) =>
+    asResult(apiRequest("/auth/profile", { method: "PUT", body: profileData }))
 };

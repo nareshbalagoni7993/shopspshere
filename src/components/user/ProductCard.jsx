@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import { addToCart } from '../../store/slices/cartSlice';
 import { toggleWishlist } from '../../store/slices/wishlistSlice';
 import { formatCurrency } from '../../utils/helpers';
+import { getCategoryIcon } from '../../constants';
+import { toast } from '../../services/toastBus';
+import { cartPopupBus } from '../../services/cartPopupBus';
 import Card from '../common/Card';
 import './ProductCard.css';
 
@@ -16,11 +19,13 @@ const ProductCard = ({ product, variant = 'grid' }) => {
   const handleAddToCart = (e) => {
     e.preventDefault();
     dispatch(addToCart({ product, quantity: 1 }));
+    cartPopupBus.show(product, 1);
   };
 
   const handleWishlist = (e) => {
     e.preventDefault();
     dispatch(toggleWishlist(product));
+    toast.info(isInWishlist ? `${product.name} removed from wishlist` : `${product.name} added to wishlist`);
   };
 
   if (variant === 'list') {
@@ -29,7 +34,9 @@ const ProductCard = ({ product, variant = 'grid' }) => {
         <img src={product.image} alt={product.name} />
         <div className="product-info-list">
           <h4>{product.name}</h4>
-          <p className="brand">{product.brand}</p>
+          <p className="brand">
+            <span aria-hidden="true">{getCategoryIcon(product.category)}</span> {product.brand}
+          </p>
           <div className="rating">
             ⭐ {product.rating} ({product.reviews} reviews)
           </div>
@@ -58,6 +65,9 @@ const ProductCard = ({ product, variant = 'grid' }) => {
             alt={product.name}
             className="product-image"
           />
+          <span className="category-badge" title={product.category} aria-hidden="true">
+            {getCategoryIcon(product.category)}
+          </span>
           {product.discount && (
             <div className="discount-badge">{product.discount}% OFF</div>
           )}

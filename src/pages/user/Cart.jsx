@@ -10,6 +10,7 @@ import {
 import Button from '../../components/common/Button';
 import EmptyState from '../../components/common/EmptyState';
 import { formatCurrency } from '../../utils/helpers';
+import { FREE_SHIPPING_THRESHOLD, getShippingCost } from '../../constants';
 import './Cart.css';
 
 const Cart = () => {
@@ -19,10 +20,11 @@ const Cart = () => {
   const { isAuthenticated } = useSelector(state => state.auth);
 
   const TAX_RATE = 0.10;
-  const SHIPPING_COST = 10;
+  const shippingCost = getShippingCost(totalPrice);
+  const amountToFreeShipping = FREE_SHIPPING_THRESHOLD - totalPrice;
 
   const tax = totalPrice * TAX_RATE;
-  const total = totalPrice + tax + SHIPPING_COST;
+  const total = totalPrice + tax + shippingCost;
 
   const handleRemove = (productId) => {
     dispatch(removeFromCart(productId));
@@ -148,8 +150,14 @@ const Cart = () => {
 
             <div className="summary-row">
               <span>Shipping</span>
-              <span>{formatCurrency(SHIPPING_COST)}</span>
+              <span>{shippingCost === 0 ? 'FREE' : formatCurrency(shippingCost)}</span>
             </div>
+
+            {shippingCost > 0 && amountToFreeShipping > 0 && (
+              <p className="free-shipping-note">
+                Add {formatCurrency(amountToFreeShipping)} more to get FREE shipping!
+              </p>
+            )}
 
             <div className="summary-row discount">
               <span>Discount</span>

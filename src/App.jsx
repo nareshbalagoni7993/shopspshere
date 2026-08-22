@@ -10,6 +10,9 @@ import './styles/global.css';
 // Layouts
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
+import GlobalLoader from './components/common/GlobalLoader';
+import ToastContainer from './components/common/ToastContainer';
+import CartAddedPopup from './components/common/CartAddedPopup';
 
 // User Pages
 import Home from './pages/user/Home';
@@ -62,6 +65,9 @@ function AppContent() {
 
   return (
       <div className="app">
+        <GlobalLoader />
+        <ToastContainer />
+        <CartAddedPopup />
         {!isAdminArea && <Header />}
         <main className="app-main">
           <Routes>

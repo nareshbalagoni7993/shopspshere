@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { addToCart } from '../../store/slices/cartSlice';
 import { toggleWishlist } from '../../store/slices/wishlistSlice';
 import { productService } from '../../services/productService';
+import { cartPopupBus } from '../../services/cartPopupBus';
 import ProductCard from '../../components/user/ProductCard';
 import Button from '../../components/common/Button';
 import Loader from '../../components/common/Loader';
@@ -25,7 +26,7 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const productData = await productService.getProduct(parseInt(id));
+        const productData = await productService.getProduct(id);
         if (productData) {
           setProduct(productData);
           const related = await productService.getRelatedProducts(
@@ -49,7 +50,7 @@ const ProductDetails = () => {
 
   const handleAddToCart = () => {
     dispatch(addToCart({ product, quantity }));
-    alert('Added to cart!');
+    cartPopupBus.show(product, quantity);
   };
 
   const handleBuyNow = () => {
@@ -62,7 +63,7 @@ const ProductDetails = () => {
   };
 
   if (loading || !product) {
-    return <Loader fullPage />;
+    return <Loader fullPage category={product?.category} label="Loading product…" />;
   }
 
   return (

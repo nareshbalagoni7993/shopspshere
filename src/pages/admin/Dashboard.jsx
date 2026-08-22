@@ -17,24 +17,32 @@ import {
 } from 'recharts';
 import { orderService } from '../../services/orderService';
 import { userService } from '../../services/userService';
-import { mockOrders } from '../../mock/mockOrders';
-import { mockProducts } from '../../mock/mockProducts';
+import { productService } from '../../services/productService';
 import { mockCategories } from '../../mock/mockCategories';
+import Loader from '../../components/common/Loader';
 import { formatCurrency } from '../../utils/helpers';
 import './AdminDashboard.css';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [userStats, setUserStats] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const orderStats = await orderService.getOrderStats();
-        const userStatsData = await userService.getUserStats();
+        const [orderStats, userStatsData, productList, orderList] = await Promise.all([
+          orderService.getOrderStats(),
+          userService.getUserStats(),
+          productService.getAllProducts(),
+          orderService.getAllOrders()
+        ]);
         setStats(orderStats);
         setUserStats(userStatsData);
+        setProducts(productList);
+        setOrders(orderList);
       } catch (error) {
         console.error('Error fetching stats:', error);
       } finally {
@@ -62,13 +70,13 @@ const Dashboard = () => {
   ];
   const ordersTrendData = revenueData.map((entry, index) => ({ month: entry.month, orders: 18 + index * 7 }));
   const userGrowthData = revenueData.map((entry, index) => ({ month: entry.month, users: 90 + index * 24 }));
-  const topProductsData = mockProducts.slice(0, 5).map((product, index) => ({ name: product.name.slice(0, 12), sales: 85 - index * 11 }));
+  const topProductsData = products.slice(0, 5).map((product, index) => ({ name: product.name.slice(0, 12), sales: 85 - index * 11 }));
   const categorySalesData = mockCategories.map((category, index) => ({ name: category.name, value: 30 + index * 15 }));
 
   const COLORS = ['#28a745', '#ffc107', '#f44336'];
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return <Loader fullPage label="Loading dashboard…" />;
   }
 
   return (
@@ -93,7 +101,7 @@ const Dashboard = () => {
           </motion.div>
 
           <motion.div className="stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-            <div className="stat-icon">🏷️</div><div className="stat-content"><h3>Total Products</h3><p className="stat-value">{mockProducts.length}</p><small className="stat-sub">Across all categories</small></div>
+            <div className="stat-icon">🏷️</div><div className="stat-content"><h3>Total Products</h3><p className="stat-value">{products.length}</p><small className="stat-sub">Across all categories</small></div>
           </motion.div>
           <motion.div className="stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
             <div className="stat-icon">✅</div><div className="stat-content"><h3>Completed Orders</h3><p className="stat-value">{stats?.completedOrders || 0}</p><small className="stat-sub">Successfully delivered</small></div>
@@ -228,7 +236,7 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {mockOrders.slice(0, 5).map(order => (
+                {orders.slice(0, 5).map(order => (
                   <tr key={order.id}>
                     <td><strong>{order.id}</strong></td>
                     <td>{order.shippingAddress.name}</td>

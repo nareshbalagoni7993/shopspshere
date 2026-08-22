@@ -47,6 +47,18 @@ export const CATEGORIES = [
   "Books"
 ];
 
+// Icon shown next to a product/category based on its category name.
+export const CATEGORY_ICONS = {
+  Electronics: "📱",
+  Fashion: "👗",
+  Home: "🏠",
+  Sports: "⚽",
+  Wearables: "⌚",
+  Books: "📚"
+};
+
+export const getCategoryIcon = (category) => CATEGORY_ICONS[category] || "🏷️";
+
 // Sort options
 export const SORT_OPTIONS = [
   { value: "popular", label: "Popular" },
@@ -121,6 +133,12 @@ export const SHIPPING_RATES = {
   OVERNIGHT: 20,
   FREE: 0
 };
+
+// Orders at or above this subtotal ship free
+export const FREE_SHIPPING_THRESHOLD = 700;
+
+export const getShippingCost = (subtotal) =>
+  subtotal >= FREE_SHIPPING_THRESHOLD ? SHIPPING_RATES.FREE : SHIPPING_RATES.EXPRESS;
 
 // Items per page for pagination
 export const ITEMS_PER_PAGE = 12;

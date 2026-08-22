@@ -22,9 +22,12 @@ const Products = () => {
       setLoading(true);
       try {
         const category = searchParams.get('category');
+        const search = searchParams.get('search');
         let data;
 
-        if (category) {
+        if (search) {
+          data = await productService.searchProducts(search);
+        } else if (category) {
           data = await productService.getProductsByCategory(category);
         } else {
           data = await productService.getAllProducts();
@@ -68,7 +71,7 @@ const Products = () => {
         case 'rating':
           return b.rating - a.rating;
         case 'newest':
-          return b.id - a.id;
+          return new Date(b.createdAt) - new Date(a.createdAt);
         default:
           return b.reviews - a.reviews;
       }
@@ -173,7 +176,7 @@ const Products = () => {
 
           {/* Products Grid */}
           {loading ? (
-            <Loader fullPage />
+            <Loader fullPage category={searchParams.get('category')} label="Loading products…" />
           ) : filteredProducts.length === 0 ? (
             <div className="no-products">
               <p>No products found. Try adjusting your filters.</p>

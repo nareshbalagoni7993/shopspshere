@@ -43,12 +43,13 @@ const Register = () => {
       const result = await authService.register({
         name: formData.name,
         email: formData.email,
-        mobile: formData.mobile
+        mobile: formData.mobile,
+        password: formData.password
       });
 
       if (result.success) {
         dispatch(loginSuccess(result));
-        navigate('/dashboard');
+        navigate('/products');
       } else {
         setError(result.message || 'Registration failed');
       }

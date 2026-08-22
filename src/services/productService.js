@@ -1,66 +1,36 @@
-import { mockProducts, getProductsByCategory, getProductById, searchProducts } from "../mock/mockProducts";
+import { apiRequest } from "./api";
 
-// Mock delay to simulate API calls
-const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
+const toQueryString = (params) => {
+  const query = Object.entries(params)
+    .filter(([, value]) => value !== undefined && value !== null && value !== "")
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&");
+  return query ? `?${query}` : "";
+};
 
 export const productService = {
-  // Get all products
-  getAllProducts: async () => {
-    await delay();
-    return mockProducts;
-  },
+  getAllProducts: () => apiRequest("/products"),
 
-  // Get products by category
-  getProductsByCategory: async (category) => {
-    await delay();
-    return getProductsByCategory(category);
-  },
+  getProductsByCategory: (category) => apiRequest(`/products${toQueryString({ category })}`),
 
-  // Get single product
-  getProduct: async (id) => {
-    await delay();
-    return getProductById(id);
-  },
+  getProduct: (id) => apiRequest(`/products/${id}`),
 
-  // Search products
-  searchProducts: async (query) => {
-    await delay();
-    return searchProducts(query);
-  },
+  searchProducts: (query) => apiRequest(`/products/search${toQueryString({ q: query })}`),
 
-  // Filter products
-  filterProducts: async (filters) => {
-    await delay();
-    let filtered = [...mockProducts];
+  filterProducts: (filters = {}) =>
+    apiRequest(
+      `/products${toQueryString({
+        category: filters.category,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        minRating: filters.minRating,
+        brand: filters.brand
+      })}`
+    ),
 
-    if (filters.category) {
-      filtered = filtered.filter(p => p.category === filters.category);
-    }
-
-    if (filters.minPrice !== undefined) {
-      filtered = filtered.filter(p => p.price >= filters.minPrice);
-    }
-
-    if (filters.maxPrice !== undefined) {
-      filtered = filtered.filter(p => p.price <= filters.maxPrice);
-    }
-
-    if (filters.minRating !== undefined) {
-      filtered = filtered.filter(p => p.rating >= filters.minRating);
-    }
-
-    if (filters.brand) {
-      filtered = filtered.filter(p => p.brand === filters.brand);
-    }
-
-    return filtered;
-  },
-
-  // Sort products
+  // Sorts an already-fetched list client-side (mirrors the previous mock behaviour).
   sortProducts: async (products, sortBy) => {
-    await delay();
     const sorted = [...products];
-
     switch (sortBy) {
       case "price-low":
         return sorted.sort((a, b) => a.price - b.price);
@@ -69,7 +39,7 @@ export const productService = {
       case "rating":
         return sorted.sort((a, b) => b.rating - a.rating);
       case "newest":
-        return sorted.sort((a, b) => b.id - a.id);
+        return sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       case "popular":
         return sorted.sort((a, b) => b.reviews - a.reviews);
       default:
@@ -77,11 +47,30 @@ export const productService = {
     }
   },
 
-  // Get related products
-  getRelatedProducts: async (productId, category) => {
-    await delay();
-    return mockProducts
-      .filter(p => p.category === category && p.id !== productId)
-      .slice(0, 5);
+  getRelatedProducts: (productId) => apiRequest(`/products/${productId}/related`),
+
+  // Admin
+  createProduct: async (productData) => {
+    try {
+      return await apiRequest("/products", { method: "POST", body: productData });
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  updateProduct: async (id, productData) => {
+    try {
+      return await apiRequest(`/products/${id}`, { method: "PUT", body: productData });
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  },
+
+  deleteProduct: async (id) => {
+    try {
+      return await apiRequest(`/products/${id}`, { method: "DELETE" });
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
   }
 };

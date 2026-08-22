@@ -5,10 +5,10 @@ import { clearCart } from '../../store/slices/cartSlice';
 import { orderService } from '../../services/orderService';
 import Button from '../../components/common/Button';
 import { formatCurrency, formatDate } from '../../utils/helpers';
+import { getShippingCost } from '../../constants';
 import './Checkout.css';
 
 const TAX_RATE = 0.10;
-const SHIPPING_COST = 10;
 const PAYMENT_WINDOW_SECONDS = 20 * 60;
 
 const getSavedAddress = (userId) => {
@@ -44,7 +44,8 @@ const Checkout = () => {
     fullName: savedAddress.fullName || user?.name || '', street: savedAddress.street || defaultAddress.street || '', city: savedAddress.city || defaultAddress.city || '', state: savedAddress.state || defaultAddress.state || '', zipCode: savedAddress.zipCode || defaultAddress.zipCode || '', country: savedAddress.country || defaultAddress.country || '', paymentMethod: 'cash_on_delivery', cardName: '', cardNumber: '', expiry: '', cvv: '', upiId: ''
   });
   const tax = useMemo(() => totalPrice * TAX_RATE, [totalPrice]);
-  const total = totalPrice + tax + SHIPPING_COST;
+  const shippingCost = getShippingCost(totalPrice);
+  const total = totalPrice + tax + shippingCost;
 
   useEffect(() => {
     if (formData.paymentMethod !== 'upi' || upiExpired) return undefined;
@@ -69,7 +70,7 @@ const Checkout = () => {
       const { fullName, street, city, state, zipCode, country } = formData;
       const shippingAddress = { fullName, street, city, state, zipCode, country };
       if (saveAddress) localStorage.setItem(`saved-address-${user?.id}`, JSON.stringify(shippingAddress));
-      const result = await orderService.createOrder({ userId: user?.id, items, subtotal: totalPrice, tax, shipping: SHIPPING_COST, total, paymentMethod: formData.paymentMethod, shippingAddress });
+      const result = await orderService.createOrder({ userId: user?.id, items, subtotal: totalPrice, tax, shipping: shippingCost, total, paymentMethod: formData.paymentMethod, shippingAddress });
       if (!result.success) throw new Error(result.message || 'Unable to place your order.');
       dispatch(clearCart()); setOrder(result.order);
     } catch (submissionError) { setError(submissionError.message || 'Unable to place your order. Please try again.'); } finally { setLoading(false); }
@@ -87,7 +88,7 @@ const Checkout = () => {
       {formData.paymentMethod === 'card' && <div className="payment-details"><p>Demo only — never enter a real card number.</p><div className="checkout-fields"><label>Name on card<input name="cardName" value={formData.cardName} onChange={updateField} required /></label><label>Card number<input name="cardNumber" inputMode="numeric" maxLength="19" placeholder="4242 4242 4242 4242" value={formData.cardNumber} onChange={updateField} required /></label><label>Expiry<input name="expiry" placeholder="MM/YY" maxLength="5" value={formData.expiry} onChange={updateField} required /></label><label>CVV<input name="cvv" inputMode="numeric" maxLength="4" type="password" value={formData.cvv} onChange={updateField} required /></label></div></div>}
       {formData.paymentMethod === 'upi' && <div className="upi-panel">{upiExpired ? <p className="checkout-error">QR code expired. Select UPI again to refresh it.</p> : <><DemoQrCode /><div><strong>Scan with any UPI app</strong><p>Pay {formatCurrency(total)} to ShopSphere Demo</p><p className="payment-timer">Code expires in {formatCountdown(paymentTimeLeft)}</p></div><label className="upi-id">UPI ID (demo)<input name="upiId" placeholder="name@upi" value={formData.upiId} onChange={updateField} required /></label></>}</div>}
     </section>{error && <p className="checkout-error" role="alert">{error}</p>}<Button type="submit" size="large" fullWidth loading={loading}>Place Order — {formatCurrency(total)}</Button></form>
-    <aside className="checkout-summary"><h2>Order Summary</h2>{items.map((item) => <div className="checkout-item" key={item.id}><span>{item.name} × {item.quantity}</span><strong>{formatCurrency(item.price * item.quantity)}</strong></div>)}<div className="checkout-total"><span>Subtotal</span><span>{formatCurrency(totalPrice)}</span></div><div className="checkout-total"><span>Tax (10%)</span><span>{formatCurrency(tax)}</span></div><div className="checkout-total"><span>Shipping</span><span>{formatCurrency(SHIPPING_COST)}</span></div><div className="checkout-total checkout-grand-total"><strong>Total</strong><strong>{formatCurrency(total)}</strong></div></aside>
+    <aside className="checkout-summary"><h2>Order Summary</h2>{items.map((item) => <div className="checkout-item" key={item.id}><span>{item.name} × {item.quantity}</span><strong>{formatCurrency(item.price * item.quantity)}</strong></div>)}<div className="checkout-total"><span>Subtotal</span><span>{formatCurrency(totalPrice)}</span></div><div className="checkout-total"><span>Tax (10%)</span><span>{formatCurrency(tax)}</span></div><div className="checkout-total"><span>Shipping</span><span>{shippingCost === 0 ? 'FREE' : formatCurrency(shippingCost)}</span></div><div className="checkout-total checkout-grand-total"><strong>Total</strong><strong>{formatCurrency(total)}</strong></div></aside>
   </div></div></section>;
 };
 
