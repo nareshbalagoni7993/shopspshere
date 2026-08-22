@@ -17,11 +17,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/;
+// CLIENT_URL may be a single origin or a comma-separated list (e.g. a Vercel
+// production URL plus its preview-deployment URLs).
+const allowedOrigins = (process.env.CLIENT_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || origin === process.env.CLIENT_URL || isLocalhost.test(origin)) {
+      if (!origin || allowedOrigins.includes(origin) || isLocalhost.test(origin)) {
         return callback(null, true);
       }
       callback(new Error('Not allowed by CORS'));
