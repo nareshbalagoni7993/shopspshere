@@ -1,0 +1,38 @@
+.card {
+  background: white;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  cursor: default;
+}
+
+.card-padding {
+  padding: 1.5rem;
+}
+
+.card-shadow-normal {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-shadow-medium {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-shadow-large {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.card-shadow-none {
+  box-shadow: none;
+  border: 1px solid #eee;
+}
+
+@media (max-width: 768px) {
+  .card {
+    border-radius: 6px;
+  }
+
+  .card-padding {
+    padding: 1.25rem;
+  }
+}

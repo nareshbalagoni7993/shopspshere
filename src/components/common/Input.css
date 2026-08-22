@@ -1,0 +1,105 @@
+.input-group {
+  margin-bottom: 1.15rem;
+}
+
+.input-group.full-width {
+  width: 100%;
+}
+
+.input-label {
+  color: #344054;
+  display: block;
+  font-size: .9rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin-bottom: .5rem;
+  transition: color .2s ease;
+  cursor: text;
+  z-index: 1;
+}
+
+.input-label.focused {
+  color: #2563eb;
+}
+
+.input-label.filled {
+  color: #2563eb;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-field {
+  width: 100%;
+  background: #fff;
+  padding: .9rem 1rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  font-size: .95rem;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+.input-field::placeholder {
+  color: #98a2b3;
+  font-size: .9rem;
+}
+
+.input-field:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.input-field.error {
+  border-color: #dc3545;
+}
+
+.input-field.error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.input-field.with-icon {
+  padding-left: 2.95rem;
+}
+
+.input-icon {
+  position: absolute;
+  color: #667085;
+  font-size: 1.05rem;
+  left: 1rem;
+  top: auto;
+  z-index: 1;
+}
+
+
+.input-error {
+  display: block;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.input-helper {
+  display: block;
+  color: #999;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .input-field {
+    padding: 0.65rem 0.875rem;
+    font-size: 0.95rem;
+  }
+}
