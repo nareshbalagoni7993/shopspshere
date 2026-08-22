@@ -1,0 +1,2 @@
+# shopspshere
+shop details
